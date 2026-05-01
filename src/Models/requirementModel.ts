@@ -17,7 +17,7 @@ const requirementSchema = new Schema<IRequirement>(
   { timestamps: true },
 );
 
-export const RequirementModel = mongoose.model<IRequirement>(
+export const Requirement = mongoose.model<IRequirement>(
   "Requirement",
   requirementSchema,
 );
