@@ -1,4 +1,5 @@
 import { TaskRepository } from "../Repository/taskRepo";
+import { getSafeObjectIdFromParam } from "../Utils/safeIdValidation";
 
 const taskRepo = new TaskRepository();
 
@@ -9,8 +10,11 @@ export const CreateTaskService = async (
   status: string = "todo"
 ) => {
   try {
+    // Validate ID
+    const safeProjectId = getSafeObjectIdFromParam(projectId);
+
     const task = await taskRepo.CreateTask({
-      projectId,
+      projectId: safeProjectId,
       title,
       description,
       status,
@@ -22,6 +26,12 @@ export const CreateTaskService = async (
       data: task,
     };
   } catch (error: any) {
+    if (error instanceof Error && error.message === 'Invalid ObjectId format') {
+      return {
+        success: false,
+        message: "Invalid project ID format",
+      };
+    }
     return {
       success: false,
       message: error.message || "Failed to create task",
@@ -31,6 +41,9 @@ export const CreateTaskService = async (
 
 export const GetTaskByIdService = async (taskId: string) => {
   try {
+    // Validate ID
+    const safeTaskId = getSafeObjectIdFromParam(taskId);
+
     const task = await taskRepo.GetTaskById(taskId);
 
     if (!task) {
@@ -46,6 +59,12 @@ export const GetTaskByIdService = async (taskId: string) => {
       data: task,
     };
   } catch (error: any) {
+    if (error instanceof Error && error.message === 'Invalid ObjectId format') {
+      return {
+        success: false,
+        message: "Invalid task ID format",
+      };
+    }
     return {
       success: false,
       message: error.message || "Failed to retrieve task",
@@ -55,6 +74,9 @@ export const GetTaskByIdService = async (taskId: string) => {
 
 export const GetTasksByProjectIdService = async (projectId: string) => {
   try {
+    // Validate ID
+    const safeProjectId = getSafeObjectIdFromParam(projectId);
+
     const tasks = await taskRepo.GetTasksByProjectId(projectId);
 
     return {
@@ -63,6 +85,12 @@ export const GetTasksByProjectIdService = async (projectId: string) => {
       data: tasks,
     };
   } catch (error: any) {
+    if (error instanceof Error && error.message === 'Invalid ObjectId format') {
+      return {
+        success: false,
+        message: "Invalid project ID format",
+      };
+    }
     return {
       success: false,
       message: error.message || "Failed to retrieve tasks",
@@ -75,6 +103,9 @@ export const UpdateTaskByIdService = async (
   updates: any
 ) => {
   try {
+    // Validate ID
+    const safeTaskId = getSafeObjectIdFromParam(taskId);
+
     const task = await taskRepo.UpdateTaskById(taskId, updates);
 
     if (!task) {
@@ -90,6 +121,12 @@ export const UpdateTaskByIdService = async (
       data: task,
     };
   } catch (error: any) {
+    if (error instanceof Error && error.message === 'Invalid ObjectId format') {
+      return {
+        success: false,
+        message: "Invalid task ID format",
+      };
+    }
     return {
       success: false,
       message: error.message || "Failed to update task",
@@ -99,6 +136,9 @@ export const UpdateTaskByIdService = async (
 
 export const DeleteTaskByIdService = async (taskId: string) => {
   try {
+    // Validate ID
+    const safeTaskId = getSafeObjectIdFromParam(taskId);
+
     const task = await taskRepo.DeleteTaskById(taskId);
 
     if (!task) {
@@ -113,6 +153,12 @@ export const DeleteTaskByIdService = async (taskId: string) => {
       message: "Task deleted successfully",
     };
   } catch (error: any) {
+    if (error instanceof Error && error.message === 'Invalid ObjectId format') {
+      return {
+        success: false,
+        message: "Invalid task ID format",
+      };
+    }
     return {
       success: false,
       message: error.message || "Failed to delete task",
@@ -125,6 +171,9 @@ export const UpdateTaskStatusService = async (
   status: string
 ) => {
   try {
+    // Validate ID
+    const safeTaskId = getSafeObjectIdFromParam(taskId);
+
     const task = await taskRepo.UpdateTaskStatus(taskId, status);
 
     if (!task) {
@@ -140,6 +189,12 @@ export const UpdateTaskStatusService = async (
       data: task,
     };
   } catch (error: any) {
+    if (error instanceof Error && error.message === 'Invalid ObjectId format') {
+      return {
+        success: false,
+        message: "Invalid task ID format",
+      };
+    }
     return {
       success: false,
       message: error.message || "Failed to update task status",

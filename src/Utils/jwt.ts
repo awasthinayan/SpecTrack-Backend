@@ -11,6 +11,6 @@ export const generateToken = (payload: TokenPayload) => {
   });
 };
 
-export const verifyToken = (token: string) => {
-  return jwt.verify(token, jwtSecret);
+export const verifyToken = async (token: string): Promise<TokenPayload> => {
+  return jwt.verify(token, jwtSecret) as TokenPayload;
 };

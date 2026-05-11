@@ -1,6 +1,6 @@
 import UserRepository from "../Repository/userRepo";
 import bcrypt from "bcryptjs";
-import { generateToken } from "../Utils/jwt";
+import { generateToken, verifyToken } from "../Utils/jwt";
 
 const userRepo = new UserRepository();
 
@@ -48,3 +48,30 @@ export const LoginUserService = async (email: string, password: string) => {
     },
   };
 };
+
+export const GetCurrentUserService = async (token: string) => {
+  const decodedToken = await verifyToken(token);
+
+  if (!decodedToken) {
+    throw new Error("Invalid token");
+  }
+  console.log(decodedToken);
+  const user = await userRepo.GetUserById(decodedToken.id);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+  };
+};
+
+export const LogoutUserService = async () => {
+  return {
+    status: "success",
+    message: "User logged out successfully",
+  }
+}

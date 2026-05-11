@@ -1,6 +1,7 @@
 import RequirementRepository from "../Repository/requirementRepo";
 import ProjectRepository from "../Repository/projectRepo";
 import UserRepository from "../Repository/userRepo";
+import { getSafeObjectIdFromParam } from "../Utils/safeIdValidation";
 
 const requirementRepo = new RequirementRepository();
 const projectRepo = new ProjectRepository();
@@ -12,11 +13,9 @@ export const CreateRequirementService = async (
   userId: string,
 ) => {
   try {
-    const existingRequirement =
-      await requirementRepo.GetRequirementById(projectId);
-    if (existingRequirement) {
-      throw new Error("A requirement with this project ID already exists");
-    }
+    // Validate IDs
+    const safeProjectId = getSafeObjectIdFromParam(projectId);
+    getSafeObjectIdFromParam(userId); // validate userId format
 
     const project = await projectRepo.GetProjectById(projectId);
     if (!project) {
@@ -28,14 +27,14 @@ export const CreateRequirementService = async (
       throw new Error("User not found");
     }
 
-    if (user._id.toString() !== project.userId.toString()) {
+    if (userId !== project.userId.toString()) {
       throw new Error(
-        "You are not authorized to create a requirement for this project",
+        "You are not authorized to create a requirement for this project"
       );
     }
 
     const newRequirement = await requirementRepo.CreateRequirement({
-      projectId: project._id,
+      projectId: safeProjectId,
       content,
     });
 
@@ -45,7 +44,10 @@ export const CreateRequirementService = async (
       data: newRequirement,
     };
   } catch (error) {
-    throw new Error("Failed to create requirement");
+    if (error instanceof Error && error.message === 'Invalid ObjectId format') {
+      throw new Error("Invalid project ID or user ID format");
+    }
+    throw error;
   }
 };
 
@@ -54,6 +56,10 @@ export const DeleteRequirementByIdService = async (
   userId: string,
 ) => {
   try {
+    // Validate IDs
+    getSafeObjectIdFromParam(id);
+    getSafeObjectIdFromParam(userId);
+
     const requirement = await requirementRepo.GetRequirementById(id);
     if (!requirement) {
       throw new Error("Requirement not found");
@@ -71,7 +77,7 @@ export const DeleteRequirementByIdService = async (
       throw new Error("User not found");
     }
 
-    if (user._id.toString() !== project.userId.toString()) {
+    if (userId !== project.userId.toString()) {
       throw new Error("You are not authorized to delete this requirement");
     }
 
@@ -82,7 +88,10 @@ export const DeleteRequirementByIdService = async (
       message: "Requirement deleted successfully",
     };
   } catch (error) {
-    throw new Error("Failed to delete requirement");
+    if (error instanceof Error && error.message === 'Invalid ObjectId format') {
+      throw new Error("Invalid requirement ID or user ID format");
+    }
+    throw error;
   }
 };
 
@@ -92,6 +101,10 @@ export const UpdateRequirementByIdService = async (
   userId: string,
 ) => {
   try {
+    // Validate IDs
+    getSafeObjectIdFromParam(id);
+    getSafeObjectIdFromParam(userId);
+
     const existingRequirement = await requirementRepo.GetRequirementById(id);
     if (!existingRequirement) {
       throw new Error("Requirement not found");
@@ -110,15 +123,8 @@ export const UpdateRequirementByIdService = async (
       throw new Error("User not found");
     }
 
-    if (user._id.toString() !== project.userId.toString()) {
+    if (userId !== project.userId.toString()) {
       throw new Error("You are not authorized to update this requirement");
-    }
-
-    if (
-      requirementData.content &&
-      requirementData.content !== existingRequirement.content
-    ) {
-      throw new Error("Requirement content cannot be updated");
     }
 
     const updatedRequirement = await requirementRepo.UpdateRequirementById(
@@ -132,7 +138,10 @@ export const UpdateRequirementByIdService = async (
       data: updatedRequirement,
     };
   } catch (error) {
-    throw new Error("Failed to update requirement");
+    if (error instanceof Error && error.message === 'Invalid ObjectId format') {
+      throw new Error("Invalid requirement ID or user ID format");
+    }
+    throw error;
   }
 };
 
@@ -141,6 +150,10 @@ export const ListRequirementsService = async (
   userId: string,
 ) => {
   try {
+    // Validate IDs
+    getSafeObjectIdFromParam(projectId);
+    getSafeObjectIdFromParam(userId);
+
     const project = await projectRepo.GetProjectById(projectId);
     if (!project) {
       throw new Error("Project not found");
@@ -151,9 +164,9 @@ export const ListRequirementsService = async (
       throw new Error("User not found");
     }
 
-    if (user._id.toString() !== project.userId.toString()) {
+    if (userId !== project.userId.toString()) {
       throw new Error(
-        "You are not authorized to view this project's requirements",
+        "You are not authorized to view this project's requirements"
       );
     }
 
@@ -167,7 +180,10 @@ export const ListRequirementsService = async (
       count: requirements.length,
     };
   } catch (error) {
-    throw new Error("Failed to retrieve requirements");
+    if (error instanceof Error && error.message === 'Invalid ObjectId format') {
+      throw new Error("Invalid project ID or user ID format");
+    }
+    throw error;
   }
 };
 
@@ -177,6 +193,11 @@ export const GetRequirementByIdService = async (
   projectId: string,
 ) => {
   try {
+    // Validate IDs
+    getSafeObjectIdFromParam(id);
+    getSafeObjectIdFromParam(userId);
+    getSafeObjectIdFromParam(projectId);
+
     const requirement = await requirementRepo.GetRequirementById(id);
     if (!requirement) {
       throw new Error("Requirement not found");
@@ -192,7 +213,7 @@ export const GetRequirementByIdService = async (
       throw new Error("User not found");
     }
 
-    if (user._id.toString() !== project.userId.toString()) {
+    if (userId !== project.userId.toString()) {
       throw new Error("You are not authorized to view this requirement");
     }
     return {
@@ -201,6 +222,9 @@ export const GetRequirementByIdService = async (
       data: requirement,
     };
   } catch (error) {
-    throw new Error("Failed to retrieve requirement");
+    if (error instanceof Error && error.message === 'Invalid ObjectId format') {
+      throw new Error("Invalid requirement ID, user ID, or project ID format");
+    }
+    throw error;
   }
 };

@@ -189,9 +189,9 @@ export const UpdateRequirementByIdController = async (c: Context) => {
     }
 
     const result = await UpdateRequirementByIdService(
-      userId,
       requirementId,
       data,
+      userId,
     );
     return c.json(result, 200);
   } catch (error: any) {
